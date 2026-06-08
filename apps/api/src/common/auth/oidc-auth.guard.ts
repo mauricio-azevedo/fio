@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { Request } from 'express';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { createRemoteJWKSet, errors, jwtVerify } from 'jose';
 import { loadEnv } from '../config/env.js';
 import type { AuthenticatedPrincipal } from './principal.js';
 
@@ -18,7 +18,9 @@ interface TokenClaims {
 @Injectable()
 export class OidcAuthGuard implements CanActivate {
   private readonly env = loadEnv();
-  private readonly jwks = createRemoteJWKSet(new URL(`${this.env.KEYCLOAK_ISSUER}/protocol/openid-connect/certs`));
+  private readonly jwks = createRemoteJWKSet(
+    new URL(`${this.env.KEYCLOAK_ISSUER}/protocol/openid-connect/certs`),
+  );
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<PrincipalRequest>();
@@ -28,18 +30,29 @@ export class OidcAuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing bearer token');
     }
 
-    const { payload } = await jwtVerify(token, this.jwks, {
-      issuer: this.env.KEYCLOAK_ISSUER,
-      audience: this.env.KEYCLOAK_AUDIENCE,
-    });
+    try {
+      const { payload } = await jwtVerify(token, this.jwks, {
+        issuer: this.env.KEYCLOAK_ISSUER,
+        audience: this.env.KEYCLOAK_AUDIENCE,
+      });
 
-    const claims = payload as TokenClaims;
+      request.principal = this.toPrincipal(payload as TokenClaims);
+      return true;
+    } catch (error) {
+      if (error instanceof errors.JOSEError) {
+        throw new UnauthorizedException('Invalid bearer token');
+      }
 
+      throw error;
+    }
+  }
+
+  private toPrincipal(claims: TokenClaims): AuthenticatedPrincipal {
     if (typeof claims.sub !== 'string' || claims.sub.length === 0) {
       throw new UnauthorizedException('Token subject is missing');
     }
 
-    request.principal = {
+    return {
       subject: claims.sub,
       email: typeof claims.email === 'string' ? claims.email : null,
       displayName:
@@ -49,8 +62,6 @@ export class OidcAuthGuard implements CanActivate {
             ? claims.preferred_username
             : null,
     };
-
-    return true;
   }
 
   private extractBearerToken(request: Request): string | null {
