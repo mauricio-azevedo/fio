@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { AuthenticatedPrincipal } from '../../common/auth/principal.js';
-import type { PrismaClientService } from '../../common/database/prisma-client.service.js';
+import { PrismaClientService } from '../../common/database/prisma-client.service.js';
 
 export interface AccountView {
   id: string;
@@ -10,7 +10,7 @@ export interface AccountView {
 
 @Injectable()
 export class IdentityService {
-  constructor(private readonly prisma: PrismaClientService) {}
+  constructor(@Inject(PrismaClientService) private readonly prisma: PrismaClientService) {}
 
   async findOrCreateAccount(principal: AuthenticatedPrincipal): Promise<AccountView> {
     const account = await this.prisma.account.upsert({
