@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, FioApiClient } from './api.js';
-import type { PreferredChannel, RelationshipCircle, RelationshipView, RelationshipWriteRequest } from './api.js';
+import type {
+  PreferredChannel,
+  RelationshipCircle,
+  RelationshipView,
+  RelationshipWriteRequest,
+} from './api.js';
 import {
   clearStoredSession,
   completeSignInFromUrl,
@@ -80,18 +85,42 @@ export function App() {
     return new FioApiClient(browserSettings.apiBaseUrl, session.accessToken);
   }, [session]);
 
-  const loadRelationships = useCallback(async (client: FioApiClient) => {
-    setLoadState('loading');
+  const resetAuthenticatedState = useCallback(() => {
+    clearStoredSession();
+    setSession(null);
+    setRelationships([]);
+    setLoadState('idle');
     setLoadError(null);
-
-    try {
-      setRelationships(await client.listRelationships());
-      setLoadState('loaded');
-    } catch (error) {
-      setLoadError(toUserMessage(error));
-      setLoadState('loaded');
-    }
+    setMutationError(null);
+    setEditingRelationshipId(null);
+    setForm(emptyForm);
   }, []);
+
+  const expireSession = useCallback(() => {
+    resetAuthenticatedState();
+    setAuthError('Your session expired. Sign in again to continue.');
+  }, [resetAuthenticatedState]);
+
+  const loadRelationships = useCallback(
+    async (client: FioApiClient) => {
+      setLoadState('loading');
+      setLoadError(null);
+
+      try {
+        setRelationships(await client.listRelationships());
+        setLoadState('loaded');
+      } catch (error) {
+        if (isSessionExpiredError(error)) {
+          expireSession();
+          return;
+        }
+
+        setLoadError(toUserMessage(error));
+        setLoadState('loaded');
+      }
+    },
+    [expireSession],
+  );
 
   useEffect(() => {
     if (authConfig === null) {
@@ -114,14 +143,14 @@ export function App() {
           return;
         }
 
-        setSession(null);
+        resetAuthenticatedState();
         setAuthError(toUserMessage(error));
       });
 
     return () => {
       isActive = false;
     };
-  }, [authConfig]);
+  }, [authConfig, resetAuthenticatedState]);
 
   useEffect(() => {
     if (apiClient === null) {
@@ -140,14 +169,16 @@ export function App() {
   };
 
   const signOut = () => {
-    clearStoredSession();
-    setSession(null);
-    setRelationships([]);
-    setLoadState('idle');
-    setLoadError(null);
-    setMutationError(null);
-    setEditingRelationshipId(null);
-    setForm(emptyForm);
+    resetAuthenticatedState();
+    setAuthError(null);
+  };
+
+  const refreshRelationships = () => {
+    if (apiClient === null) {
+      return;
+    }
+
+    void loadRelationships(apiClient);
   };
 
   const saveRelationship = async (event: FormEvent<HTMLFormElement>) => {
@@ -167,10 +198,17 @@ export function App() {
           ? await apiClient.createRelationship(request)
           : await apiClient.updateRelationship(editingRelationshipId, request);
 
-      setRelationships((currentRelationships) => upsertRelationship(currentRelationships, savedRelationship));
+      setRelationships((currentRelationships) =>
+        sortRelationships(upsertRelationship(currentRelationships, savedRelationship)),
+      );
       setEditingRelationshipId(null);
       setForm(emptyForm);
     } catch (error) {
+      if (isSessionExpiredError(error)) {
+        expireSession();
+        return;
+      }
+
       setMutationError(toUserMessage(error));
     } finally {
       setIsSaving(false);
@@ -214,6 +252,11 @@ export function App() {
         cancelEditing();
       }
     } catch (error) {
+      if (isSessionExpiredError(error)) {
+        expireSession();
+        return;
+      }
+
       setMutationError(toUserMessage(error));
     } finally {
       setDeletingRelationshipId(null);
@@ -246,7 +289,7 @@ export function App() {
           </div>
         </header>
 
-        {authError === null ? null : <Alert tone="error" title="Sign-in failed" message={authError} />}
+        {authError === null ? null : <Alert title="Sign-in failed" message={authError} />}
 
         {session === null ? (
           <AnonymousState />
@@ -263,7 +306,7 @@ export function App() {
                 <button
                   className="btn btn-outline btn-sm"
                   disabled={apiClient === null || loadState === 'loading'}
-                  onClick={() => apiClient === null ? undefined : void loadRelationships(apiClient)}
+                  onClick={refreshRelationships}
                   type="button"
                 >
                   Refresh
@@ -271,7 +314,7 @@ export function App() {
               </div>
 
               {loadError === null ? null : (
-                <Alert tone="error" title="Could not load relationships" message={loadError} />
+                <Alert title="Could not load relationships" message={loadError} />
               )}
 
               <RelationshipList
@@ -292,7 +335,7 @@ export function App() {
               </p>
 
               {mutationError === null ? null : (
-                <Alert tone="error" title="Could not save relationship" message={mutationError} />
+                <Alert title="Could not save relationship" message={mutationError} />
               )}
 
               <RelationshipForm
@@ -421,9 +464,7 @@ function RelationshipForm({
         <span className="label-text">Circle</span>
         <select
           className="select select-bordered"
-          onChange={(event) =>
-            onChange({ ...form, circle: event.target.value as RelationshipCircle })
-          }
+          onChange={(event) => onChange({ ...form, circle: event.target.value as RelationshipCircle })}
           value={form.circle}
         >
           {Object.entries(circleLabels).map(([value, label]) => (
@@ -498,9 +539,9 @@ function RelationshipForm({
   );
 }
 
-function Alert({ message, title, tone }: { message: string; title: string; tone: 'error' }) {
+function Alert({ message, title }: { message: string; title: string }) {
   return (
-    <div className={`alert alert-${tone} mt-6`}>
+    <div className="alert alert-error mt-6">
       <div>
         <h2 className="font-semibold">{title}</h2>
         <p className="text-sm">{message}</p>
@@ -529,7 +570,7 @@ function upsertRelationship(
   );
 
   if (existingIndex === -1) {
-    return [...relationships, savedRelationship].sort(compareRelationshipsByName);
+    return [...relationships, savedRelationship];
   }
 
   return relationships.map((relationship) =>
@@ -537,16 +578,19 @@ function upsertRelationship(
   );
 }
 
+function sortRelationships(relationships: RelationshipView[]): RelationshipView[] {
+  return [...relationships].sort(compareRelationshipsByName);
+}
+
 function compareRelationshipsByName(left: RelationshipView, right: RelationshipView): number {
   return left.name.localeCompare(right.name);
 }
 
-function toUserMessage(error: unknown): string {
-  if (error instanceof ApiError && error.status === 401) {
-    clearStoredSession();
-    return 'Your session expired. Sign in again to continue.';
-  }
+function isSessionExpiredError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 401;
+}
 
+function toUserMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
