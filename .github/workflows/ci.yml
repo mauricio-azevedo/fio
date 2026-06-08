@@ -11,7 +11,7 @@ jobs:
     name: Validate
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql://fio:fio_dev_password@localhost:5432/fio?schema=public
+      DATABASE_URL: postgresql://fio:fio_dev_password@localhost:55432/fio?schema=public
       KEYCLOAK_ISSUER: http://localhost:8080/realms/fio
       KEYCLOAK_AUDIENCE: fio-api
     steps:

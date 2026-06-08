@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: fio
       POSTGRES_PASSWORD: fio_dev_password
     ports:
-      - '5432:5432'
+      - '55432:5432'
     volumes:
       - fio-postgres-data:/var/lib/postgresql/data
     healthcheck:

@@ -16,7 +16,7 @@ The API owns the Prisma schema, migrations, and Prisma config under `apps/api/pr
 The local app database URL is:
 
 ```bash
-DATABASE_URL="postgresql://fio:fio_dev_password@localhost:5432/fio?schema=public"
+DATABASE_URL="postgresql://fio:fio_dev_password@localhost:55432/fio?schema=public"
 ```
 
 Generate Prisma Client before API validation commands when running commands directly inside `apps/api`:
