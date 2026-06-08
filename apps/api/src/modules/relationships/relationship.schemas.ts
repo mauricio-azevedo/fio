@@ -15,10 +15,9 @@ export const createRelationshipSchema = z.object({
   pausedUntil: isoDateSchema.nullable().optional(),
 });
 
-export const updateRelationshipSchema = createRelationshipSchema.partial().refine(
-  (value) => Object.keys(value).length > 0,
-  'At least one field must be provided',
-);
+export const updateRelationshipSchema = createRelationshipSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, 'At least one field must be provided');
 
 export type CreateRelationshipInput = z.infer<typeof createRelationshipSchema>;
 export type UpdateRelationshipInput = z.infer<typeof updateRelationshipSchema>;
