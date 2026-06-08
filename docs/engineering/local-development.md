@@ -11,6 +11,8 @@ docker compose up -d fio-postgres keycloak-postgres keycloak
 
 ## API database
 
+The API owns the Prisma schema, migrations, and Prisma config under `apps/api/prisma` and `apps/api/prisma.config.ts`.
+
 The local app database URL is:
 
 ```bash
