@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RelationshipCircle {
+  core
+  close
+  casual
+  professional
+  family
+}
+
+enum PreferredChannel {
+  message
+  call
+  in_person
+  email
+}
+
+model Account {
+  id              String   @id @default(uuid()) @db.Uuid
+  keycloakSubject String   @unique @map("keycloak_subject")
+  email           String?
+  displayName     String?  @map("display_name")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  relationships Relationship[]
+  interactions  Interaction[]
+  promises      RelationshipPromise[]
+
+  @@map("accounts")
+}
+
+model Relationship {
+  id               String             @id @default(uuid()) @db.Uuid
+  accountId        String             @map("account_id") @db.Uuid
+  name             String
+  circle           RelationshipCircle
+  preferredChannel PreferredChannel   @map("preferred_channel")
+  cadenceDays      Int                @map("cadence_days")
+  lastContactOn    DateTime?          @map("last_contact_on") @db.Date
+  pausedUntil      DateTime?          @map("paused_until") @db.Date
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  account      Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  interactions Interaction[]
+  promises     RelationshipPromise[]
+
+  @@index([accountId])
+  @@index([accountId, name])
+  @@map("relationships")
+}
+
+model Interaction {
+  id             String           @id @default(uuid()) @db.Uuid
+  accountId      String           @map("account_id") @db.Uuid
+  relationshipId String           @map("relationship_id") @db.Uuid
+  happenedOn     DateTime         @map("happened_on") @db.Date
+  channel        PreferredChannel
+  note           String?
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  account      Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  relationship Relationship @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, happenedOn])
+  @@index([relationshipId, happenedOn])
+  @@map("interactions")
+}
+
+model RelationshipPromise {
+  id             String    @id @default(uuid()) @db.Uuid
+  accountId      String    @map("account_id") @db.Uuid
+  relationshipId String    @map("relationship_id") @db.Uuid
+  description    String
+  dueOn          DateTime? @map("due_on") @db.Date
+  completedOn    DateTime? @map("completed_on") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  account      Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  relationship Relationship @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, completedOn])
+  @@index([relationshipId, completedOn])
+  @@map("relationship_promises")
+}
