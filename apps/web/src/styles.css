@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+@plugin "daisyui" {
+  themes: fio --default;
+}
+
+@plugin "daisyui/theme" {
+  name: 'fio';
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: #f7f3ec;
+  --color-base-200: #eee7db;
+  --color-base-300: #dfd4c4;
+  --color-base-content: #1f1c19;
+  --color-primary: #2d4739;
+  --color-primary-content: #f7f3ec;
+  --color-secondary: #6e5d48;
+  --color-secondary-content: #f7f3ec;
+  --color-accent: #9a6a43;
+  --color-accent-content: #f7f3ec;
+  --color-neutral: #24201c;
+  --color-neutral-content: #f7f3ec;
+  --color-info: #345c7c;
+  --color-success: #386641;
+  --color-warning: #93691f;
+  --color-error: #8a2f2f;
+  --radius-selector: 0.35rem;
+  --radius-field: 0.45rem;
+  --radius-box: 0.9rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
