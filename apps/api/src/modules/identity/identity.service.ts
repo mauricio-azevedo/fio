@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClientService } from '../../common/database/prisma-client.service.js';
 import type { AuthenticatedPrincipal } from '../../common/auth/principal.js';
+import type { PrismaClientService } from '../../common/database/prisma-client.service.js';
 
 export interface AccountView {
   id: string;
