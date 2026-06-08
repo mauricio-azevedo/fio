@@ -127,28 +127,34 @@ const relationshipSelect = {
 function toRelationshipUpdateData(input: UpdateRelationshipInput): Prisma.RelationshipUpdateInput {
   const data: Prisma.RelationshipUpdateInput = {};
 
-  if ('name' in input) {
-    data.name = input.name;
+  const { name } = input;
+  if (name !== undefined) {
+    data.name = name;
   }
 
-  if ('circle' in input) {
-    data.circle = input.circle;
+  const { circle } = input;
+  if (circle !== undefined) {
+    data.circle = circle;
   }
 
-  if ('preferredChannel' in input) {
-    data.preferredChannel = input.preferredChannel;
+  const { preferredChannel } = input;
+  if (preferredChannel !== undefined) {
+    data.preferredChannel = preferredChannel;
   }
 
-  if ('cadenceDays' in input) {
-    data.cadenceDays = input.cadenceDays;
+  const { cadenceDays } = input;
+  if (cadenceDays !== undefined) {
+    data.cadenceDays = cadenceDays;
   }
 
-  if ('lastContactOn' in input) {
-    data.lastContactOn = input.lastContactOn;
+  const { lastContactOn } = input;
+  if (lastContactOn !== undefined) {
+    data.lastContactOn = lastContactOn;
   }
 
-  if ('pausedUntil' in input) {
-    data.pausedUntil = input.pausedUntil;
+  const { pausedUntil } = input;
+  if (pausedUntil !== undefined) {
+    data.pausedUntil = pausedUntil;
   }
 
   return data;
