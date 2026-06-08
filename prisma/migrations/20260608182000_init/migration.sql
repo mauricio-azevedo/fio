@@ -1,9 +1,11 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 CREATE TYPE "RelationshipCircle" AS ENUM ('core', 'close', 'casual', 'professional', 'family');
 
 CREATE TYPE "PreferredChannel" AS ENUM ('message', 'call', 'in_person', 'email');
 
 CREATE TABLE "accounts" (
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "keycloak_subject" TEXT NOT NULL,
   "email" TEXT,
   "display_name" TEXT,
@@ -14,7 +16,7 @@ CREATE TABLE "accounts" (
 );
 
 CREATE TABLE "relationships" (
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "account_id" UUID NOT NULL,
   "name" TEXT NOT NULL,
   "circle" "RelationshipCircle" NOT NULL,
@@ -29,7 +31,7 @@ CREATE TABLE "relationships" (
 );
 
 CREATE TABLE "interactions" (
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "account_id" UUID NOT NULL,
   "relationship_id" UUID NOT NULL,
   "happened_on" DATE NOT NULL,
@@ -41,7 +43,7 @@ CREATE TABLE "interactions" (
 );
 
 CREATE TABLE "relationship_promises" (
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "account_id" UUID NOT NULL,
   "relationship_id" UUID NOT NULL,
   "description" TEXT NOT NULL,
