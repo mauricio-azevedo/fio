@@ -22,7 +22,7 @@ enum PreferredChannel {
 }
 
 model Account {
-  id              String   @id @default(uuid()) @db.Uuid
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   keycloakSubject String   @unique @map("keycloak_subject")
   email           String?
   displayName     String?  @map("display_name")
@@ -37,7 +37,7 @@ model Account {
 }
 
 model Relationship {
-  id               String             @id @default(uuid()) @db.Uuid
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   accountId        String             @map("account_id") @db.Uuid
   name             String
   circle           RelationshipCircle
@@ -58,7 +58,7 @@ model Relationship {
 }
 
 model Interaction {
-  id             String           @id @default(uuid()) @db.Uuid
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   accountId      String           @map("account_id") @db.Uuid
   relationshipId String           @map("relationship_id") @db.Uuid
   happenedOn     DateTime         @map("happened_on") @db.Date
@@ -75,7 +75,7 @@ model Interaction {
 }
 
 model RelationshipPromise {
-  id             String    @id @default(uuid()) @db.Uuid
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   accountId      String    @map("account_id") @db.Uuid
   relationshipId String    @map("relationship_id") @db.Uuid
   description    String
