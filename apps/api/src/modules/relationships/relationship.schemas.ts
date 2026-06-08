@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
-const relationshipCircleSchema = z.enum(['core', 'close', 'casual', 'professional', 'family']);
+const relationshipCircleSchema = z.enum([
+  'core',
+  'close',
+  'casual',
+  'professional',
+  'family',
+]);
 const preferredChannelSchema = z.enum(['message', 'call', 'in_person', 'email']);
 const isoDateSchema = z
   .string()
