@@ -62,6 +62,7 @@ export function App() {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [form, setForm] = useState<RelationshipFormState>(emptyForm);
   const [editingRelationshipId, setEditingRelationshipId] = useState<string | null>(null);
+  const [confirmingDeleteRelationshipId, setConfirmingDeleteRelationshipId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingRelationshipId, setDeletingRelationshipId] = useState<string | null>(null);
 
@@ -93,6 +94,7 @@ export function App() {
     setLoadError(null);
     setMutationError(null);
     setEditingRelationshipId(null);
+    setConfirmingDeleteRelationshipId(null);
     setForm(emptyForm);
   }, []);
 
@@ -217,6 +219,7 @@ export function App() {
 
   const startEditing = (relationship: RelationshipView) => {
     setEditingRelationshipId(relationship.id);
+    setConfirmingDeleteRelationshipId(null);
     setMutationError(null);
     setForm({
       name: relationship.name,
@@ -234,6 +237,15 @@ export function App() {
     setForm(emptyForm);
   };
 
+  const requestDeleteConfirmation = (relationshipId: string) => {
+    setMutationError(null);
+    setConfirmingDeleteRelationshipId(relationshipId);
+  };
+
+  const cancelDeleteConfirmation = () => {
+    setConfirmingDeleteRelationshipId(null);
+  };
+
   const deleteRelationship = async (relationshipId: string) => {
     if (apiClient === null) {
       return;
@@ -247,6 +259,7 @@ export function App() {
       setRelationships((currentRelationships) =>
         currentRelationships.filter((relationship) => relationship.id !== relationshipId),
       );
+      setConfirmingDeleteRelationshipId(null);
 
       if (editingRelationshipId === relationshipId) {
         cancelEditing();
@@ -318,10 +331,13 @@ export function App() {
               )}
 
               <RelationshipList
+                confirmingDeleteRelationshipId={confirmingDeleteRelationshipId}
                 deletingRelationshipId={deletingRelationshipId}
                 isLoading={loadState === 'loading'}
-                onDelete={(relationshipId) => void deleteRelationship(relationshipId)}
+                onCancelDelete={cancelDeleteConfirmation}
+                onConfirmDelete={(relationshipId) => void deleteRelationship(relationshipId)}
                 onEdit={startEditing}
+                onRequestDelete={requestDeleteConfirmation}
                 relationships={relationships}
               />
             </div>
@@ -369,16 +385,22 @@ function AnonymousState() {
 }
 
 function RelationshipList({
+  confirmingDeleteRelationshipId,
   deletingRelationshipId,
   isLoading,
-  onDelete,
+  onCancelDelete,
+  onConfirmDelete,
   onEdit,
+  onRequestDelete,
   relationships,
 }: {
+  confirmingDeleteRelationshipId: string | null;
   deletingRelationshipId: string | null;
   isLoading: boolean;
-  onDelete: (relationshipId: string) => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: (relationshipId: string) => void;
   onEdit: (relationship: RelationshipView) => void;
+  onRequestDelete: (relationshipId: string) => void;
   relationships: RelationshipView[];
 }) {
   if (isLoading) {
@@ -398,35 +420,60 @@ function RelationshipList({
 
   return (
     <div className="grid gap-3">
-      {relationships.map((relationship) => (
-        <article className="rounded-box border border-base-300 bg-base-200 p-5" key={relationship.id}>
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h3 className="text-xl font-semibold tracking-tight">{relationship.name}</h3>
-              <p className="mt-2 text-sm text-neutral-600">
-                {circleLabels[relationship.circle]} · {channelLabels[relationship.preferredChannel]} · every{' '}
-                {relationship.cadenceDays} days
-              </p>
-              <p className="mt-3 text-sm text-neutral-600">
-                Last contact: {relationship.lastContactOn ?? 'not recorded'}
-              </p>
+      {relationships.map((relationship) => {
+        const isConfirmingDelete = confirmingDeleteRelationshipId === relationship.id;
+        const isDeleting = deletingRelationshipId === relationship.id;
+
+        return (
+          <article className="rounded-box border border-base-300 bg-base-200 p-5" key={relationship.id}>
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 className="text-xl font-semibold tracking-tight">{relationship.name}</h3>
+                <p className="mt-2 text-sm text-neutral-600">
+                  {circleLabels[relationship.circle]} · {channelLabels[relationship.preferredChannel]} · every{' '}
+                  {relationship.cadenceDays} days
+                </p>
+                <p className="mt-3 text-sm text-neutral-600">
+                  Last contact: {relationship.lastContactOn ?? 'not recorded'}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button className="btn btn-ghost btn-sm" onClick={() => onEdit(relationship)} type="button">
+                  Edit
+                </button>
+                {isConfirmingDelete ? (
+                  <>
+                    <button
+                      className="btn btn-error btn-sm"
+                      disabled={isDeleting}
+                      onClick={() => onConfirmDelete(relationship.id)}
+                      type="button"
+                    >
+                      {isDeleting ? 'Deleting...' : 'Confirm delete'}
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      disabled={isDeleting}
+                      onClick={onCancelDelete}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="btn btn-outline btn-sm"
+                    onClick={() => onRequestDelete(relationship.id)}
+                    type="button"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button className="btn btn-ghost btn-sm" onClick={() => onEdit(relationship)} type="button">
-                Edit
-              </button>
-              <button
-                className="btn btn-outline btn-sm"
-                disabled={deletingRelationshipId === relationship.id}
-                onClick={() => onDelete(relationship.id)}
-                type="button"
-              >
-                {deletingRelationshipId === relationship.id ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </article>
-      ))}
+          </article>
+        );
+      })}
     </div>
   );
 }
