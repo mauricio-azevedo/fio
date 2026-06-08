@@ -2,7 +2,8 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { CurrentPrincipal } from '../../common/auth/current-principal.decorator.js';
 import { OidcAuthGuard } from '../../common/auth/oidc-auth.guard.js';
 import type { AuthenticatedPrincipal } from '../../common/auth/principal.js';
-import { IdentityService, type AccountView } from './identity.service.js';
+import { IdentityService } from './identity.service.js';
+import type { AccountView } from './identity.service.js';
 
 @Controller('me')
 export class IdentityController {
