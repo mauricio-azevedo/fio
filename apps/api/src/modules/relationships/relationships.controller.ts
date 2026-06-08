@@ -1,6 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { OidcAuthGuard } from '../../common/auth/oidc-auth.guard.js';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CurrentPrincipal } from '../../common/auth/current-principal.decorator.js';
+import { OidcAuthGuard } from '../../common/auth/oidc-auth.guard.js';
 import type { AuthenticatedPrincipal } from '../../common/auth/principal.js';
 import { parseBody } from '../../common/http/parse-body.js';
 import { IdentityService } from '../identity/identity.service.js';
