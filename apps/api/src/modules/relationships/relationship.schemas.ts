@@ -1,16 +1,8 @@
 import { z } from 'zod';
 
-const relationshipCircleSchema = z.enum([
-  'core',
-  'close',
-  'casual',
-  'professional',
-  'family',
-]);
+const relationshipCircleSchema = z.enum(['core', 'close', 'casual', 'professional', 'family']);
 const preferredChannelSchema = z.enum(['message', 'call', 'in_person', 'email']);
-const isoDateSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected date in YYYY-MM-DD format');
+const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected date in YYYY-MM-DD format');
 
 export const createRelationshipSchema = z.object({
   name: z.string().trim().min(1).max(160),
