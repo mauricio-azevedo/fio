@@ -30,11 +30,7 @@ export interface AttentionCandidate {
   reasons: AttentionReason[];
 }
 
-export type AttentionReason =
-  | 'never_contacted'
-  | 'cadence_due'
-  | 'promise_pending'
-  | 'paused';
+export type AttentionReason = 'never_contacted' | 'cadence_due' | 'promise_pending' | 'paused';
 
 export function compareLocalDates(left: LocalDateString, right: LocalDateString): number {
   return left.localeCompare(right);
@@ -59,7 +55,10 @@ export function scoreRelationshipAttention(input: {
   const { relationship, promises, today } = input;
   const reasons: AttentionReason[] = [];
 
-  if (relationship.pausedUntil !== null && compareLocalDates(relationship.pausedUntil, today) >= 0) {
+  if (
+    relationship.pausedUntil !== null &&
+    compareLocalDates(relationship.pausedUntil, today) >= 0
+  ) {
     reasons.push('paused');
     return { relationship, score: -1, reasons };
   }
@@ -105,6 +104,9 @@ export function selectTodayAttention(input: {
       scoreRelationshipAttention({ relationship, promises: input.promises, today: input.today }),
     )
     .filter((candidate) => candidate.score > 0)
-    .sort((left, right) => right.score - left.score || left.relationship.name.localeCompare(right.relationship.name))
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.relationship.name.localeCompare(right.relationship.name),
+    )
     .slice(0, limit);
 }
