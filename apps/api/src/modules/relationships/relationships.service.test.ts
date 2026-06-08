@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
-import { PrismaClientService } from '../../common/database/prisma-client.service.js';
+import type { PrismaClientService } from '../../common/database/prisma-client.service.js';
 import { RelationshipsService } from './relationships.service.js';
 
 const accountId = '11111111-1111-4111-8111-111111111111';
@@ -135,9 +135,9 @@ describe('RelationshipsService', () => {
     });
     const service = new RelationshipsService(prisma);
 
-    await expect(service.update(otherAccountId, relationshipId, { name: 'Ana Silva' })).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.update(otherAccountId, relationshipId, { name: 'Ana Silva' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
     expect(prisma.relationship.update).not.toHaveBeenCalled();
   });
 
