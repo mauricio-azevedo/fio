@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { PreferredChannel, RelationshipCircle } from '@prisma/client';
+import type { PreferredChannel, Prisma, RelationshipCircle } from '@prisma/client';
 import { PrismaClientService } from '../../common/database/prisma-client.service.js';
 import type { CreateRelationshipInput, UpdateRelationshipInput } from './relationship.schemas.js';
 
@@ -49,8 +49,8 @@ export class RelationshipsService {
         circle: input.circle,
         preferredChannel: input.preferredChannel,
         cadenceDays: input.cadenceDays,
-        lastContactOn: input.lastContactOn === undefined ? null : input.lastContactOn,
-        pausedUntil: input.pausedUntil === undefined ? null : input.pausedUntil,
+        lastContactOn: input.lastContactOn ?? null,
+        pausedUntil: input.pausedUntil ?? null,
       },
       select: relationshipSelect,
     });
@@ -73,7 +73,7 @@ export class RelationshipsService {
 
     const relationship = await this.prisma.relationship.update({
       where: { id: relationshipId },
-      data: input,
+      data: toRelationshipUpdateData(input),
       select: relationshipSelect,
     });
 
@@ -123,6 +123,36 @@ const relationshipSelect = {
   createdAt: true,
   updatedAt: true,
 } satisfies Record<keyof RelationshipRecord, true>;
+
+function toRelationshipUpdateData(input: UpdateRelationshipInput): Prisma.RelationshipUpdateInput {
+  const data: Prisma.RelationshipUpdateInput = {};
+
+  if ('name' in input) {
+    data.name = input.name;
+  }
+
+  if ('circle' in input) {
+    data.circle = input.circle;
+  }
+
+  if ('preferredChannel' in input) {
+    data.preferredChannel = input.preferredChannel;
+  }
+
+  if ('cadenceDays' in input) {
+    data.cadenceDays = input.cadenceDays;
+  }
+
+  if ('lastContactOn' in input) {
+    data.lastContactOn = input.lastContactOn;
+  }
+
+  if ('pausedUntil' in input) {
+    data.pausedUntil = input.pausedUntil;
+  }
+
+  return data;
+}
 
 function toRelationshipView(relationship: RelationshipRecord): RelationshipView {
   return {
