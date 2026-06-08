@@ -88,7 +88,10 @@ export class RelationshipsService {
     });
   }
 
-  private async assertRelationshipOwnership(accountId: string, relationshipId: string): Promise<void> {
+  private async assertRelationshipOwnership(
+    accountId: string,
+    relationshipId: string,
+  ): Promise<void> {
     await this.findOwnedRelationship(accountId, relationshipId);
   }
 
