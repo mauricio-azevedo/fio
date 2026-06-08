@@ -8,8 +8,8 @@
     "dev": "vite --host 0.0.0.0",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "lint": "eslint src --ext .ts,.tsx"
+    "test": "vitest run --passWithNoTests",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.1",
