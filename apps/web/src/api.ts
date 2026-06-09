@@ -82,16 +82,17 @@ export class FioApiClient {
     const headers = new Headers({
       Authorization: `Bearer ${this.accessToken}`,
     });
+    const requestInit: RequestInit = {
+      method: options.method ?? 'GET',
+      headers,
+    };
 
     if (options.body !== undefined) {
       headers.set('Content-Type', 'application/json');
+      requestInit.body = JSON.stringify(options.body);
     }
 
-    const response = await fetch(`${this.baseUrl}/${path}`, {
-      method: options.method ?? 'GET',
-      headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
-    });
+    const response = await fetch(`${this.baseUrl}/${path}`, requestInit);
 
     if (!response.ok) {
       throw new ApiError(`Fio API request failed with status ${response.status}.`, response.status);
