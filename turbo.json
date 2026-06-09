@@ -1,5 +1,15 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "FIO_WEB_ORIGIN",
+    "KEYCLOAK_AUDIENCE",
+    "KEYCLOAK_ISSUER",
+    "PORT",
+    "VITE_API_BASE_URL",
+    "VITE_KEYCLOAK_ISSUER",
+    "VITE_OIDC_CLIENT_ID"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
