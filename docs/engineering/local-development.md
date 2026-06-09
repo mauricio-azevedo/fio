@@ -38,3 +38,18 @@ pnpm build
 ## Identity boundary
 
 Keycloak is the external identity provider. The API validates bearer tokens and maps the token subject to an internal `Account`. Product authorization is based on the internal account id, not on Keycloak roles.
+
+## Authenticated web app
+
+The browser app uses the Keycloak `fio-web` public client with Authorization Code + PKCE. The API validates access tokens for the `fio-api` audience.
+
+Run the services in separate terminals:
+
+```bash
+pnpm --filter fio-api dev
+pnpm --filter fio-web dev
+```
+
+Open `http://localhost:5173`, sign in through Keycloak, and use the relationships workspace.
+
+The browser runtime settings are defined in `.env.example` as `VITE_*` variables. Vite loads them from the workspace root through `apps/web/vite.config.ts`.

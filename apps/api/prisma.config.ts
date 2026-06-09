@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig, env } from 'prisma/config';
+import { defineConfig } from 'prisma/config';
 
 const appRoot = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(appRoot, '../..');
@@ -14,6 +14,16 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: env('DATABASE_URL'),
+    url: readRequiredEnv('DATABASE_URL'),
   },
 });
+
+function readRequiredEnv(name: string): string {
+  const value = process.env[name];
+
+  if (value === undefined || value.length === 0) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+}
