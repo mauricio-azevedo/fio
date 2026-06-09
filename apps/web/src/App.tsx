@@ -62,7 +62,9 @@ export function App() {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [form, setForm] = useState<RelationshipFormState>(emptyForm);
   const [editingRelationshipId, setEditingRelationshipId] = useState<string | null>(null);
-  const [confirmingDeleteRelationshipId, setConfirmingDeleteRelationshipId] = useState<string | null>(null);
+  const [confirmingDeleteRelationshipId, setConfirmingDeleteRelationshipId] = useState<
+    string | null
+  >(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingRelationshipId, setDeletingRelationshipId] = useState<string | null>(null);
 
@@ -281,7 +283,9 @@ export function App() {
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-10">
         <header className="flex flex-col gap-6 border-b border-base-300 pb-8 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.28em] text-neutral-500">Fio</p>
+            <p className="mb-3 text-sm font-medium uppercase tracking-[0.28em] text-neutral-500">
+              Fio
+            </p>
             <h1 className="max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">
               Keep important relationships from fading by inertia.
             </h1>
@@ -313,7 +317,8 @@ export function App() {
                 <div>
                   <h2 className="text-2xl font-semibold tracking-tight">People</h2>
                   <p className="mt-2 text-sm leading-6 text-neutral-600">
-                    Your list is private to your account. The server owns authorization and account scope.
+                    Your list is private to your account. The server owns authorization and account
+                    scope.
                   </p>
                 </div>
                 <button
@@ -376,8 +381,8 @@ function AnonymousState() {
       <div className="max-w-xl rounded-box border border-base-300 bg-base-200 p-8">
         <h2 className="text-2xl font-semibold tracking-tight">Enter with your Fio account</h2>
         <p className="mt-4 leading-7 text-neutral-600">
-          Fio stores relationship data behind your account boundary. Sign in to manage the people you want to
-          keep close.
+          Fio stores relationship data behind your account boundary. Sign in to manage the people
+          you want to keep close.
         </p>
       </div>
     </section>
@@ -404,7 +409,9 @@ function RelationshipList({
   relationships: RelationshipView[];
 }) {
   if (isLoading) {
-    return <p className="rounded-box border border-base-300 bg-base-200 p-5">Loading relationships...</p>;
+    return (
+      <p className="rounded-box border border-base-300 bg-base-200 p-5">Loading relationships...</p>
+    );
   }
 
   if (relationships.length === 0) {
@@ -425,20 +432,28 @@ function RelationshipList({
         const isDeleting = deletingRelationshipId === relationship.id;
 
         return (
-          <article className="rounded-box border border-base-300 bg-base-200 p-5" key={relationship.id}>
+          <article
+            className="rounded-box border border-base-300 bg-base-200 p-5"
+            key={relationship.id}
+          >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <h3 className="text-xl font-semibold tracking-tight">{relationship.name}</h3>
                 <p className="mt-2 text-sm text-neutral-600">
-                  {circleLabels[relationship.circle]} · {channelLabels[relationship.preferredChannel]} · every{' '}
-                  {relationship.cadenceDays} days
+                  {circleLabels[relationship.circle]} ·{' '}
+                  {channelLabels[relationship.preferredChannel]} · every {relationship.cadenceDays}{' '}
+                  days
                 </p>
                 <p className="mt-3 text-sm text-neutral-600">
                   Last contact: {relationship.lastContactOn ?? 'not recorded'}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button className="btn btn-ghost btn-sm" onClick={() => onEdit(relationship)} type="button">
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => onEdit(relationship)}
+                  type="button"
+                >
                   Edit
                 </button>
                 {isConfirmingDelete ? (
@@ -511,7 +526,9 @@ function RelationshipForm({
         <span className="label-text">Circle</span>
         <select
           className="select select-bordered"
-          onChange={(event) => onChange({ ...form, circle: event.target.value as RelationshipCircle })}
+          onChange={(event) =>
+            onChange({ ...form, circle: event.target.value as RelationshipCircle })
+          }
           value={form.circle}
         >
           {Object.entries(circleLabels).map(([value, label]) => (

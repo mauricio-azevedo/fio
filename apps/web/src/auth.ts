@@ -162,7 +162,10 @@ function createRandomString(byteLength: number): string {
 }
 
 async function createCodeChallenge(codeVerifier: string): Promise<string> {
-  const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+  const digest = await window.crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(codeVerifier),
+  );
 
   return base64UrlEncode(new Uint8Array(digest));
 }
